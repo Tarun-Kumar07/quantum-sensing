@@ -1,4 +1,6 @@
 # Byte-compiled / optimized / DLL files
+circuit/benchmark.txt
+
 __pycache__/
 *.py[codz]
 *$py.class
@@ -124,7 +126,7 @@ ipython_config.py
 #   in the .venv directory. It is recommended not to include this directory in version control.
 .pixi
 
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
+# PEP 582; used by e.g. github.plots/David-OConnor/pyflow and github.plots/pdm-project/pdm
 __pypackages__/
 
 # Celery stuff
