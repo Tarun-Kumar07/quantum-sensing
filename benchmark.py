@@ -25,9 +25,9 @@ def benchmark(name):
 
     for qubits, blocks in [(q, b) for q in qubits for b in blocks]:
         circuit_params = generate_circuit_parameters(qubits, blocks)
-        execution_time = timeit.timeit(lambda: run_circuit(circuit_params, hamiltonian_parameters), number=1)
-        with open(filename, "a") as f:
-            f.write(f"{name} - Qubits: {qubits}, Blocks: {blocks}, Execution time: {execution_time} seconds \n")
+        execution_time = timeit.timeit(lambda: run_circuit(circuit_params, hamiltonian_parameters), number=10)
+        with open(filename, "w") as f:
+            f.write(f"{name} - Qubits: {qubits}, Blocks: {blocks}, Average Execution time 10 runs: {execution_time/10} seconds \n")
 
 if __name__ == '__main__':
     benchmark("quspin")
