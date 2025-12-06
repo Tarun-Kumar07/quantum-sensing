@@ -3,4 +3,5 @@ pennylane==0.42.3
 quspin==1.0.0
 cirq==1.6.1
 qiskit==2.2.3
+qiskit-aer==0.17.2
 numpy==2.3.5
