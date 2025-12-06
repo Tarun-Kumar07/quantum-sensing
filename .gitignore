@@ -1,5 +1,5 @@
 # Byte-compiled / optimized / DLL files
-circuit/benchmark.txt
+data
 
 __pycache__/
 *.py[codz]
