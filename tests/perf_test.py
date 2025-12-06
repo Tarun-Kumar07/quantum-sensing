@@ -27,8 +27,8 @@ def generate_circuit_parameters(num_qubits, num_blocks):
 # -------------------------------
 # Benchmark test using pytest API
 # -------------------------------
-@pytest.mark.parametrize("num_qubits", list(range(4, 5)))
-@pytest.mark.parametrize("num_blocks", list(range(1, 2)))
+@pytest.mark.parametrize("num_qubits", list(range(4, 13)))
+@pytest.mark.parametrize("num_blocks", list(range(1, 5)))
 @pytest.mark.parametrize("circuit_class", [
     QuspinQuantumSensingCircuit,
     PennylaneQuantumSensingCircuit,
