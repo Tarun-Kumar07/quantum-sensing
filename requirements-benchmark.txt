@@ -1,5 +1,6 @@
 pytest==9.0.1
 pennylane==0.42.3
+pennylane-lightning==0.42.0
 quspin==1.0.0
 cirq==1.6.1
 qiskit==2.2.3

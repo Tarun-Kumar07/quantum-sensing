@@ -15,7 +15,7 @@ class QuantumSensingCircuit(abc.ABC):
 
         self.__hamiltonian_parameters = hamiltonian_parameters
 
-    def run_circuit(self) -> dict:
+    def run_circuit(self) -> np.ndarray:
         """
         :return: probability dictionary of binary representation of states to their probabilities
         """
@@ -42,6 +42,8 @@ class QuantumSensingCircuit(abc.ABC):
             self.double_body_interaction(xx_rotation, 'x', interaction_strengths)
             self.double_body_interaction(zz_rotation, 'z', interaction_strengths)
 
+        self.single_body_interaction(np.pi/2, 'x', self.__num_qubits)
+
         return self.calculate_probabilities()
 
     @abc.abstractmethod
@@ -66,7 +68,7 @@ class QuantumSensingCircuit(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def calculate_probabilities(self) -> dict:
+    def calculate_probabilities(self) -> np.ndarray:
         """
         :return: probability array of the final state after running the circuit
         """

@@ -7,7 +7,7 @@ class PennylaneQuantumSensingCircuit(QuantumSensingCircuit):
     def __init__(self, phi_signal ,circuit_parameters, hamiltonian_parameters):
         super().__init__(phi_signal, circuit_parameters, hamiltonian_parameters)
         self.num_qubits = circuit_parameters['num_qubits']
-        self.device = qml.device('default.qubit', wires=self.num_qubits)
+        self.device = qml.device('lightning.qubit', wires=self.num_qubits)
         self.gates_applied = []
 
     def single_body_interaction(self, theta: float, operator: str, num_qubits: int):

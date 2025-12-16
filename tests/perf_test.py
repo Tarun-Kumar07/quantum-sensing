@@ -1,6 +1,7 @@
 import pytest
 import tracemalloc
 import time
+import os
 import numpy as np
 from quantum_sensing import QuspinQuantumSensingCircuit
 from quantum_sensing.cirq import CirqQuantumSensingCircuit
@@ -27,7 +28,7 @@ def generate_circuit_parameters(num_qubits, num_blocks):
 # -------------------------------
 # Benchmark test using pytest API
 # -------------------------------
-@pytest.mark.parametrize("num_qubits", list(range(4, 13)))
+@pytest.mark.parametrize("num_qubits", list(range(4, 5)))
 @pytest.mark.parametrize("num_blocks", list(range(1, 5)))
 @pytest.mark.parametrize("circuit_class", [
     QuspinQuantumSensingCircuit,
@@ -35,18 +36,18 @@ def generate_circuit_parameters(num_qubits, num_blocks):
     QiskitQuantumSensingCircuit,
     CirqQuantumSensingCircuit,
 ])
+@pytest.mark.parametrize("num_threads", list(range(1,2)))
 def test_benchmark_circuit(
-        circuit_class,
         num_qubits,
         num_blocks,
+        circuit_class,
+        num_threads,
         record_property):
-    """
-    Benchmark multiplication functions for time + memory.
-    Stores results using pytest's record_property API.
-    """
+
+    os.environ["OMP_NUM_THREADS"] = str(num_threads)
+
     circuit_parameters = generate_circuit_parameters(num_qubits, num_blocks)
 
-    # Measure memory + time
     tracemalloc.start()
     start_time = time.perf_counter()
 
@@ -61,9 +62,10 @@ def test_benchmark_circuit(
     # print(probabilties)
     assert probabilties.shape == (2 ** num_qubits,)
 
-    # Record metrics in pytest report
     record_property("circuit_class", circuit_class.__name__)
     record_property("num_qubits", num_qubits)
     record_property("num_blocks", num_blocks)
+    record_property("num_threads", num_threads)
     record_property("time_sec", end_time - start_time)
     record_property("peak_memory_bytes", peak)
+

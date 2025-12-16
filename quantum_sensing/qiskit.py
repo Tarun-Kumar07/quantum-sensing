@@ -1,10 +1,11 @@
 from qiskit import QuantumCircuit, transpile
 from qiskit_aer import AerSimulator
 import numpy as np
+import os
 
 from quantum_sensing.circuit import QuantumSensingCircuit
 
-sim_statevector = AerSimulator(method='statevector')
+sim_statevector = AerSimulator(method='statevector', max_parallel_threads=os.environ.get("OMP_NUM_THREADS", 1))
 
 class QiskitQuantumSensingCircuit(QuantumSensingCircuit):
     def __init__(self, phi_signal, circuit_parameters, hamiltonian_parameters):

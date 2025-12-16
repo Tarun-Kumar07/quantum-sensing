@@ -1,8 +1,11 @@
 from quantum_sensing.circuit import QuantumSensingCircuit
+import os
 import cirq
+import qsimcirq
 import numpy as np
 
 simulator = cirq.Simulator()
+qsim_simulator = qsimcirq.QSimSimulator({'t' : os.environ.get("OMP_NUM_THREADS", 1)})
 
 class CirqQuantumSensingCircuit(QuantumSensingCircuit):
     def __init__(self, phi_signal, circuit_parameters, hamiltonian_parameters):
@@ -33,6 +36,6 @@ class CirqQuantumSensingCircuit(QuantumSensingCircuit):
                 self.circuit.append(cirq.ZZPowGate(exponent=phi)(q_i, q_j))
 
     def calculate_probabilities(self) -> np.ndarray:
-        result = simulator.simulate(self.circuit)
+        result = qsim_simulator.simulate(self.circuit)
         statevector = result.final_state_vector
         return np.abs(statevector) ** 2
