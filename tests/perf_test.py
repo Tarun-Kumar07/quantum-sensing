@@ -28,7 +28,7 @@ def generate_circuit_parameters(num_qubits, num_blocks):
 # -------------------------------
 # Benchmark test using pytest API
 # -------------------------------
-@pytest.mark.parametrize("num_qubits", list(range(4, 5)))
+@pytest.mark.parametrize("num_qubits", list(range(4, 13)))
 @pytest.mark.parametrize("num_blocks", list(range(1, 5)))
 @pytest.mark.parametrize("circuit_class", [
     QuspinQuantumSensingCircuit,
@@ -36,7 +36,7 @@ def generate_circuit_parameters(num_qubits, num_blocks):
     QiskitQuantumSensingCircuit,
     CirqQuantumSensingCircuit,
 ])
-@pytest.mark.parametrize("num_threads", list(range(1,2)))
+@pytest.mark.parametrize("num_threads", list(range(1,10)))
 def test_benchmark_circuit(
         num_qubits,
         num_blocks,
@@ -68,4 +68,3 @@ def test_benchmark_circuit(
     record_property("num_threads", num_threads)
     record_property("time_sec", end_time - start_time)
     record_property("peak_memory_bytes", peak)
-
