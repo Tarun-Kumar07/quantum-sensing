@@ -1,7 +1,7 @@
 import abc
 import numpy as np
 
-from quantum_sensing.hamiltonian_interaction_strength import J_zig_zag
+from quantum_sensing.hamiltonian_interaction_strength import J_zig_zag, get_J_function
 
 
 class QuantumSensingCircuit(abc.ABC):
@@ -12,16 +12,15 @@ class QuantumSensingCircuit(abc.ABC):
         self.__encoder_parameters = circuit_parameters["encoder_parameters"]
         self.__decoder_parameters = circuit_parameters["decoder_parameters"]
         self.__phi_signal = phi_signal
-
         self.__hamiltonian_parameters = hamiltonian_parameters
 
     def run_circuit(self) -> np.ndarray:
         """
         :return: probability dictionary of binary representation of states to their probabilities
         """
-        # TODO parameterize this, right now hardcoded to zig zag
         qubit_pairs = [(i, j) for i in range(self.__num_qubits) for j in range(i + 1, self.__num_qubits)]
-        interaction_strengths = [(J_zig_zag(i, j, self.__hamiltonian_parameters), i, j) for i, j in qubit_pairs]
+        j_function = get_J_function(self.__hamiltonian_parameters.get("hamiltonian_type", "zig_zag"))
+        interaction_strengths = [(j_function(i, j, self.__hamiltonian_parameters), i, j) for i, j in qubit_pairs]
 
         self.single_body_interaction(np.pi/2, 'y', self.__num_qubits)
 

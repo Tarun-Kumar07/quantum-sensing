@@ -10,6 +10,7 @@ hamiltonian_parameters = {
     "rabi_frequency": 50e3,
     "omega_m": 2.75e6,
     "mu": 10000,
+    "hamiltonian_type": "com",
 }
 
 @pytest.mark.parametrize("circuit_class", [
@@ -37,3 +38,23 @@ def test_sanity_check(circuit_class):
     probabilities = circuit.run_circuit()
 
     np.testing.assert_allclose(probabilities, 1/(2**num_qubits), rtol=1e-5, atol=1e-8)
+
+def test_invalid_hamiltonian_type():
+    num_blocks = 1
+    num_qubits = 2
+    circuit_parameters = {
+        "num_qubits": num_qubits,
+        "num_blocks": num_blocks,
+        "encoder_parameters": np.zeros((num_blocks, 3)),
+        "decoder_parameters": np.zeros((num_blocks, 3)),
+    }
+    invalid_hamiltonian_parameters = {
+        "rabi_frequency": 50e3,
+        "omega_m": 2.75e6,
+        "mu": 10000,
+        "hamiltonian_type": "invalid_type",
+    }
+
+    circuit = QiskitQuantumSensingCircuit(0, circuit_parameters, invalid_hamiltonian_parameters)
+    with pytest.raises(ValueError, match="Hamiltonian type 'invalid_type' is not supported."):
+        circuit.run_circuit()
