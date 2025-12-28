@@ -28,24 +28,24 @@ def generate_circuit_parameters(num_qubits, num_blocks):
 # -------------------------------
 # Benchmark test using pytest API
 # -------------------------------
-@pytest.mark.parametrize("num_qubits", list(range(4, 13)))
-@pytest.mark.parametrize("num_blocks", list(range(1, 5)))
+benchmark_params = list(set(
+    [(q, 5) for q in range(5, 14)] +
+    [(13, b) for b in range(1, 6)]
+))
+benchmark_params.sort()
+
+@pytest.mark.parametrize("num_qubits, num_blocks", benchmark_params)
 @pytest.mark.parametrize("circuit_class", [
     QuspinQuantumSensingCircuit,
     PennylaneQuantumSensingCircuit,
     QiskitQuantumSensingCircuit,
     CirqQuantumSensingCircuit,
 ])
-@pytest.mark.parametrize("num_threads", list(range(1,10)))
 def test_benchmark_circuit(
         num_qubits,
         num_blocks,
         circuit_class,
-        num_threads,
         record_property):
-
-    os.environ["OMP_NUM_THREADS"] = str(num_threads)
-
     circuit_parameters = generate_circuit_parameters(num_qubits, num_blocks)
 
     tracemalloc.start()
@@ -65,6 +65,6 @@ def test_benchmark_circuit(
     record_property("circuit_class", circuit_class.__name__)
     record_property("num_qubits", num_qubits)
     record_property("num_blocks", num_blocks)
-    record_property("num_threads", num_threads)
+    record_property("num_threads", os.environ.get("OMP_NUM_THREADS"))
     record_property("time_sec", end_time - start_time)
     record_property("peak_memory_bytes", peak)

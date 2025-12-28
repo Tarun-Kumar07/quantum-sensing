@@ -49,6 +49,9 @@ class QuantumSensingCircuit(abc.ABC):
     @abc.abstractmethod
     def single_body_interaction(self, theta: float, operator: str, num_qubits: int):
         """
+        Implements the unitary evolution operator defined by:
+            exp(-i * θ * Σ_{i} (operator_i))
+        where operator_i is operator acting on ith qubit    
         :param theta: Angle of rotation
         :param operator: Can be 'x', 'y' or 'z'
         :param num_qubits: Number of qubits in the circuit, so that the operation can be applied to all qubits
@@ -59,6 +62,10 @@ class QuantumSensingCircuit(abc.ABC):
     @abc.abstractmethod
     def double_body_interaction(self, theta: float, operator: str, interaction_strengths: list[tuple]):
         """
+        Implements the unitary evolution operator defined by:
+            exp(-i * θ * Σ_{i,j} [J_ij * (operator_i ⊗ operator_j)])
+        where operator_i is operator acting on ith qubit, J_ij can be derived from interaction_strengths
+
         :param theta: Angle of rotation
         :param operator: Can be 'x', 'y' or 'z'
         :param interaction_strengths: List of tuples (J_ij, i, j) where i and j are qubit indices and J_ij is
