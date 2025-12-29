@@ -5,7 +5,8 @@ import qsimcirq
 import numpy as np
 
 simulator = cirq.Simulator()
-qsim_simulator = qsimcirq.QSimSimulator({'t' : int(os.environ.get("OMP_NUM_THREADS", 1))})
+qsim_simulator = qsimcirq.QSimSimulator({'t': int(os.environ.get("OMP_NUM_THREADS", 1))})
+
 
 class CirqQuantumSensingCircuit(QuantumSensingCircuit):
     def __init__(self, phi_signal, circuit_parameters, hamiltonian_parameters):

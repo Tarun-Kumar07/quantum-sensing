@@ -7,6 +7,7 @@ from quantum_sensing.circuit import QuantumSensingCircuit
 
 sim_statevector = AerSimulator(method='statevector', max_parallel_threads=int(os.environ.get("OMP_NUM_THREADS", 1)))
 
+
 class QiskitQuantumSensingCircuit(QuantumSensingCircuit):
     def __init__(self, phi_signal, circuit_parameters, hamiltonian_parameters):
         super().__init__(phi_signal, circuit_parameters, hamiltonian_parameters)

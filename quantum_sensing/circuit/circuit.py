@@ -7,7 +7,6 @@ from quantum_sensing.circuit.hamiltonian_interaction_strength import get_J_funct
 class QuantumSensingCircuit(abc.ABC):
     def __init__(self, phi_signal, circuit_parameters: dict, hamiltonian_parameters: dict):
         self.__num_qubits = circuit_parameters["num_qubits"]
-        # TODO verify shapes of encoder and decoder parameters, will be useful when saving
         self.__encoder_parameters = circuit_parameters["encoder_parameters"]
         self.__decoder_parameters = circuit_parameters["decoder_parameters"]
         assert len(self.__encoder_parameters) == len(self.__decoder_parameters)
