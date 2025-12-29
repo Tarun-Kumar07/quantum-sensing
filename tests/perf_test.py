@@ -3,10 +3,7 @@ import tracemalloc
 import time
 import os
 import numpy as np
-from quantum_sensing import QuspinQuantumSensingCircuit
-from quantum_sensing.cirq import CirqQuantumSensingCircuit
-from quantum_sensing.pennylane import PennylaneQuantumSensingCircuit
-from quantum_sensing.qiskit import QiskitQuantumSensingCircuit
+from quantum_sensing.circuit import create_quantum_sensing_circuit
 
 # -------------------------------
 # Parameter values
@@ -35,16 +32,11 @@ benchmark_params = list(set(
 benchmark_params.sort()
 
 @pytest.mark.parametrize("num_qubits, num_blocks", benchmark_params)
-@pytest.mark.parametrize("circuit_class", [
-    QuspinQuantumSensingCircuit,
-    PennylaneQuantumSensingCircuit,
-    QiskitQuantumSensingCircuit,
-    CirqQuantumSensingCircuit,
-])
+@pytest.mark.parametrize("backend", [ 'quspin', 'qiskit', 'pennylane', 'cirq' ])
 def test_benchmark_circuit(
         num_qubits,
         num_blocks,
-        circuit_class,
+        backend,
         record_property):
     circuit_parameters = generate_circuit_parameters(num_qubits, num_blocks)
 
@@ -52,7 +44,7 @@ def test_benchmark_circuit(
     start_time = time.perf_counter()
 
     phi_signal = np.pi/4
-    circuit = circuit_class(phi_signal, circuit_parameters, hamiltonian_parameters)
+    circuit = create_quantum_sensing_circuit(phi_signal, circuit_parameters, hamiltonian_parameters, backend)
     probabilties = circuit.run_circuit()
 
     end_time = time.perf_counter()
@@ -62,7 +54,7 @@ def test_benchmark_circuit(
     # print(probabilties)
     assert probabilties.shape == (2 ** num_qubits,)
 
-    record_property("circuit_class", circuit_class.__name__)
+    record_property("circuit_class", circuit.__class__.__name__)
     record_property("num_qubits", num_qubits)
     record_property("num_blocks", num_blocks)
     record_property("num_threads", os.environ.get("OMP_NUM_THREADS"))

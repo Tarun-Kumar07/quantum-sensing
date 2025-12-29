@@ -1,10 +1,8 @@
 import pytest
 
 import numpy as np
-from quantum_sensing import QuspinQuantumSensingCircuit
-from quantum_sensing.cirq import CirqQuantumSensingCircuit
-from quantum_sensing.pennylane import PennylaneQuantumSensingCircuit
-from quantum_sensing.qiskit import QiskitQuantumSensingCircuit
+from quantum_sensing.circuit import create_quantum_sensing_circuit
+from quantum_sensing.circuit.qiskit import QiskitQuantumSensingCircuit
 
 hamiltonian_parameters = {
     "rabi_frequency": 50e3,
@@ -13,13 +11,8 @@ hamiltonian_parameters = {
     "hamiltonian_type": "com",
 }
 
-@pytest.mark.parametrize("circuit_class", [
-    QuspinQuantumSensingCircuit,
-    PennylaneQuantumSensingCircuit,
-    QiskitQuantumSensingCircuit,
-    CirqQuantumSensingCircuit,
-])
-def test_sanity_check(circuit_class):
+@pytest.mark.parametrize("backend", [ 'quspin', 'qiskit', 'pennylane', 'cirq' ])
+def test_sanity_check(backend):
     '''
     All the parameterized rotations are set to zero in this test.
     This applies RY(pi/2) and RX(pi/2) on all qubits.
@@ -34,7 +27,7 @@ def test_sanity_check(circuit_class):
         "decoder_parameters": np.zeros((num_blocks, 3)),
     }
 
-    circuit = circuit_class(0, circuit_parameters, hamiltonian_parameters)
+    circuit = create_quantum_sensing_circuit(0, circuit_parameters, hamiltonian_parameters)
     probabilities = circuit.run_circuit()
 
     np.testing.assert_allclose(probabilities, 1/(2**num_qubits), rtol=1e-5, atol=1e-8)

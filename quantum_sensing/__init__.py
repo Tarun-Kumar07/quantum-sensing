@@ -1,1 +1,1 @@
-from quantum_sensing.quspin import QuspinQuantumSensingCircuit
+from quantum_sensing.circuit.quspin import QuspinQuantumSensingCircuit

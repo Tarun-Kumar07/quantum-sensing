@@ -1,7 +1,7 @@
 import abc
 import numpy as np
 
-from quantum_sensing.hamiltonian_interaction_strength import J_zig_zag, get_J_function
+from quantum_sensing.circuit.hamiltonian_interaction_strength import get_J_function
 
 
 class QuantumSensingCircuit(abc.ABC):
@@ -22,7 +22,7 @@ class QuantumSensingCircuit(abc.ABC):
         j_function = get_J_function(self.__hamiltonian_parameters.get("hamiltonian_type", "zig_zag"))
         interaction_strengths = [(j_function(i, j, self.__hamiltonian_parameters), i, j) for i, j in qubit_pairs]
 
-        self.single_body_interaction(np.pi/2, 'y', self.__num_qubits)
+        self.single_body_interaction(np.pi / 2, 'y', self.__num_qubits)
 
         # Encoder block
         for block in range(self.__num_blocks):
@@ -41,7 +41,7 @@ class QuantumSensingCircuit(abc.ABC):
             self.double_body_interaction(xx_rotation, 'x', interaction_strengths)
             self.double_body_interaction(zz_rotation, 'z', interaction_strengths)
 
-        self.single_body_interaction(np.pi/2, 'x', self.__num_qubits)
+        self.single_body_interaction(np.pi / 2, 'x', self.__num_qubits)
 
         return self.calculate_probabilities()
 
@@ -79,3 +79,25 @@ class QuantumSensingCircuit(abc.ABC):
         :return: probability array of the final state after running the circuit
         """
         pass
+
+
+def create_quantum_sensing_circuit(
+        phi_signal: float,
+        circuit_parameters: dict,
+        hamiltonian_parameters: dict,
+        backend: str = 'pennylane') -> QuantumSensingCircuit:
+
+    if backend == "qiskit":
+        from quantum_sensing.circuit.qiskit import QiskitQuantumSensingCircuit
+        return QiskitQuantumSensingCircuit(phi_signal, circuit_parameters, hamiltonian_parameters)
+    elif backend == "cirq":
+        from quantum_sensing.circuit.cirq import CirqQuantumSensingCircuit
+        return CirqQuantumSensingCircuit(phi_signal, circuit_parameters, hamiltonian_parameters)
+    elif backend == "quspin":
+        from quantum_sensing.circuit.quspin import QuspinQuantumSensingCircuit
+        return QuspinQuantumSensingCircuit(phi_signal, circuit_parameters, hamiltonian_parameters)
+    elif backend == "pennylane":
+        from quantum_sensing.circuit.pennylane import PennyLaneQuantumSensingCircuit
+        return PennyLaneQuantumSensingCircuit(phi_signal, circuit_parameters, hamiltonian_parameters)
+    else:
+        raise ValueError(f"Backend '{backend}' is not supported.")
