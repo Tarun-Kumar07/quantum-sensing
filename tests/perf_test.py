@@ -3,7 +3,7 @@ import tracemalloc
 import time
 import os
 import numpy as np
-from quantum_sensing.circuit import create_quantum_sensing_circuit
+from quantum_sensing.circuit import create_quantum_sensing_circuit_random
 
 # -------------------------------
 # Parameter values
@@ -14,14 +14,6 @@ hamiltonian_parameters = {
     "mu": 10000,
 }
 
-def generate_circuit_parameters(num_qubits, num_blocks):
-    return {
-        "num_qubits": num_qubits,
-        "num_blocks": num_blocks,
-        "encoder_parameters": np.full((num_blocks, 3), np.pi/4),
-        "decoder_parameters": np.full((num_blocks, 3), np.pi/4),
-    }
-
 # -------------------------------
 # Benchmark test using pytest API
 # -------------------------------
@@ -31,20 +23,19 @@ benchmark_params = list(set(
 ))
 benchmark_params.sort()
 
+
 @pytest.mark.parametrize("num_qubits, num_blocks", benchmark_params)
-@pytest.mark.parametrize("backend", [ 'quspin', 'qiskit', 'pennylane', 'cirq' ])
+@pytest.mark.parametrize("backend", ['quspin', 'qiskit', 'pennylane', 'cirq'])
 def test_benchmark_circuit(
         num_qubits,
         num_blocks,
         backend,
         record_property):
-    circuit_parameters = generate_circuit_parameters(num_qubits, num_blocks)
-
     tracemalloc.start()
     start_time = time.perf_counter()
 
-    phi_signal = np.pi/4
-    circuit = create_quantum_sensing_circuit(phi_signal, circuit_parameters, hamiltonian_parameters, backend)
+    phi_signal = np.pi / 4
+    circuit = create_quantum_sensing_circuit_random(num_qubits, num_blocks, hamiltonian_parameters, phi_signal, backend)
     probabilties = circuit.run_circuit()
 
     end_time = time.perf_counter()
