@@ -12,6 +12,7 @@ hamiltonian_parameters = {
     "rabi_frequency": 50e3,
     "omega_m": 2.75e6,
     "mu": 10000,
+    'hamiltonian_type': 'zig_zag',
 }
 
 
