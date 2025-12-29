@@ -7,10 +7,11 @@ from quantum_sensing.circuit.hamiltonian_interaction_strength import get_J_funct
 class QuantumSensingCircuit(abc.ABC):
     def __init__(self, phi_signal, circuit_parameters: dict, hamiltonian_parameters: dict):
         self.__num_qubits = circuit_parameters["num_qubits"]
-        self.__num_blocks = circuit_parameters["num_blocks"]
         # TODO verify shapes of encoder and decoder parameters, will be useful when saving
         self.__encoder_parameters = circuit_parameters["encoder_parameters"]
         self.__decoder_parameters = circuit_parameters["decoder_parameters"]
+        assert len(self.__encoder_parameters) == len(self.__decoder_parameters)
+        self.__num_blocks = len(self.__encoder_parameters)
         self.__phi_signal = phi_signal
         self.__hamiltonian_parameters = hamiltonian_parameters
 
@@ -88,16 +89,16 @@ def create_quantum_sensing_circuit(
         backend: str = 'pennylane') -> QuantumSensingCircuit:
 
     if backend == "qiskit":
-        from quantum_sensing.circuit.qiskit import QiskitQuantumSensingCircuit
+        from .qiskit import QiskitQuantumSensingCircuit
         return QiskitQuantumSensingCircuit(phi_signal, circuit_parameters, hamiltonian_parameters)
     elif backend == "cirq":
-        from quantum_sensing.circuit.cirq import CirqQuantumSensingCircuit
+        from .cirq import CirqQuantumSensingCircuit
         return CirqQuantumSensingCircuit(phi_signal, circuit_parameters, hamiltonian_parameters)
     elif backend == "quspin":
-        from quantum_sensing.circuit.quspin import QuspinQuantumSensingCircuit
+        from .quspin import QuspinQuantumSensingCircuit
         return QuspinQuantumSensingCircuit(phi_signal, circuit_parameters, hamiltonian_parameters)
     elif backend == "pennylane":
-        from quantum_sensing.circuit.pennylane import PennyLaneQuantumSensingCircuit
-        return PennyLaneQuantumSensingCircuit(phi_signal, circuit_parameters, hamiltonian_parameters)
+        from .pennylane import PennylaneQuantumSensingCircuit
+        return PennylaneQuantumSensingCircuit(phi_signal, circuit_parameters, hamiltonian_parameters)
     else:
         raise ValueError(f"Backend '{backend}' is not supported.")

@@ -6,8 +6,9 @@ from quspin.tools.evolution import expm_multiply_parallel
 
 from quantum_sensing.circuit import QuantumSensingCircuit
 
+
 class QuspinQuantumSensingCircuit(QuantumSensingCircuit):
-    def __init__(self, phi_signal,  circuit_parameters, hamiltonian_parameters):
+    def __init__(self, phi_signal, circuit_parameters, hamiltonian_parameters):
         super().__init__(phi_signal, circuit_parameters, hamiltonian_parameters)
         num_qubits = circuit_parameters['num_qubits']
         zero_state = np.zeros(2 ** num_qubits, dtype=np.complex128)

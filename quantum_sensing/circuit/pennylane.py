@@ -48,9 +48,3 @@ class PennylaneQuantumSensingCircuit(QuantumSensingCircuit):
             return qml.probs(wires=range(self.num_qubits))
 
         return circuit()
-
-class PennylaneQuantumSensingCircuitGpu(QuantumSensingCircuit):
-    def __init__(self, phi_signal ,circuit_parameters, hamiltonian_parameters):
-        super().__init__(phi_signal, circuit_parameters, hamiltonian_parameters)
-        # Overriding the to a gpu device
-        self.device = qml.device('lightning.gpu', wires=circuit_parameters['num_qubits'])

@@ -22,7 +22,6 @@ def test_sanity_check(backend):
     num_qubits = 4
     circuit_parameters = {
         "num_qubits": num_qubits,
-        "num_blocks": num_blocks,
         "encoder_parameters": np.zeros((num_blocks, 3)),
         "decoder_parameters": np.zeros((num_blocks, 3)),
     }
