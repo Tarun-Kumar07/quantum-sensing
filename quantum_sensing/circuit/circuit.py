@@ -97,24 +97,7 @@ def create_quantum_sensing_circuit(
         from quantum_sensing.circuit.quspin import QuspinQuantumSensingCircuit
         return QuspinQuantumSensingCircuit(phi_signal, circuit_parameters, hamiltonian_parameters)
     elif backend == "pennylane":
-        from quantum_sensing.circuit.pennylane import PennylaneQuantumSensingCircuit
-        return PennylaneQuantumSensingCircuit(phi_signal, circuit_parameters, hamiltonian_parameters)
+        from quantum_sensing.circuit.pennylane import PennyLaneQuantumSensingCircuit
+        return PennyLaneQuantumSensingCircuit(phi_signal, circuit_parameters, hamiltonian_parameters)
     else:
         raise ValueError(f"Backend '{backend}' is not supported.")
-
-
-def create_quantum_sensing_circuit_random(
-        num_qubits: int,
-        num_blocks: int,
-        hamiltonian_parameters: dict,
-        phi_signal: float,
-        backend: str) -> QuantumSensingCircuit:
-
-    circuit_parameters = {
-        "num_qubits": num_qubits,
-        "num_blocks": num_blocks,
-        "encoder_parameters": np.full((num_blocks, 3), np.pi / 4),
-        "decoder_parameters": np.full((num_blocks, 3), np.pi / 4),
-    }
-
-    return create_quantum_sensing_circuit(phi_signal, circuit_parameters, hamiltonian_parameters, backend)
