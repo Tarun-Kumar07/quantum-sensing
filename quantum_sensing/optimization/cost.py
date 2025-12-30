@@ -65,10 +65,10 @@ class CostEvaluator:
     def __init__(self,
                  circuit_hyperparameters: CircuitHyperParameters,
                  hamiltonian_hyperparameters: HamiltonianHyperParameters,
-                 available_cpu_cores: int,
+                 pool: multiprocessing.Pool,
                  phi_precision: int = 100):
         self.__num_qubits = circuit_hyperparameters['num_qubits']
-        self.__available_cpu_cores = available_cpu_cores
+        self.__pool = pool
         self.__circuit_backend = circuit_hyperparameters['backend']
         self.__hamiltonian_hyperparameters = hamiltonian_hyperparameters
         self.__phi_range = np.linspace(-np.pi, np.pi, phi_precision)
@@ -99,8 +99,7 @@ class CostEvaluator:
             for phi in self.__phi_range
         ]
 
-        with multiprocessing.Pool(processes=self.__available_cpu_cores) as pool:
-            mse_values = pool.map(global_mse_worker, args_for_tasks)
+        mse_values = self.__pool.map(global_mse_worker, args_for_tasks)
 
         return self.__phi_range, np.array(mse_values)
 

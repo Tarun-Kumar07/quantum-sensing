@@ -1,3 +1,4 @@
+import multiprocessing
 import os
 import tempfile
 
@@ -78,25 +79,27 @@ def __initialize_mlflow():
 
 def run_trial(circuit_hyperparameters: CircuitHyperParameters, hamiltonian_hyperparameters: HamiltonianHyperParameters):
     """Orchestrates the experiment with MLflow logging."""
-    cores_to_use = get_available_cpu_cores()
-    cost_evaluator = CostEvaluator(circuit_hyperparameters, hamiltonian_hyperparameters, cores_to_use)
     param_manager = ParameterManager(circuit_hyperparameters['num_blocks'])
 
     __initialize_mlflow()
-    with mlflow.start_run():
-        log_trial_parameters(circuit_hyperparameters, hamiltonian_hyperparameters)
 
-        result, cost_history = __optimize(cost_evaluator, param_manager)
-        log_result(result)
-        optimal_encoder_parameters, optimal_decoder_parameters, optimal_a = param_manager.unflatten(result.x)
+    cores_to_use = get_available_cpu_cores()
+    with multiprocessing.Pool(processes=cores_to_use) as pool:
+        cost_evaluator = CostEvaluator(circuit_hyperparameters, hamiltonian_hyperparameters, pool)
+        with mlflow.start_run():
+            log_trial_parameters(circuit_hyperparameters, hamiltonian_hyperparameters)
 
-        # Visualization
-        visualization.plot_cost_history(cost_history)
-        phis, mse_values = cost_evaluator.evaluate_mse_for_all_phi(
-            optimal_encoder_parameters,
-            optimal_decoder_parameters,
-            optimal_a)
-        visualization.plot_mse_with_prior(phis, mse_values)
+            result, cost_history = __optimize(cost_evaluator, param_manager)
+            log_result(result)
+            optimal_encoder_parameters, optimal_decoder_parameters, optimal_a = param_manager.unflatten(result.x)
+
+            # Visualization
+            visualization.plot_cost_history(cost_history)
+            phis, mse_values = cost_evaluator.evaluate_mse_for_all_phi(
+                optimal_encoder_parameters,
+                optimal_decoder_parameters,
+                optimal_a)
+            visualization.plot_mse_with_prior(phis, mse_values)
 
 
 def get_available_cpu_cores():
