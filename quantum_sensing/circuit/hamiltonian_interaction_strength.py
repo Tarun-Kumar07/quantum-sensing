@@ -24,3 +24,8 @@ def get_J_function(hamiltonian_type: str):
         return J_com
     else:
         raise ValueError(f"Hamiltonian type '{hamiltonian_type}' is not supported.")
+
+
+def interaction_strength(i: int, j: int, hamiltonian_parameters: dict) -> float:
+    j_function = get_J_function(hamiltonian_parameters["hamiltonian_type"])
+    return j_function(i, j, hamiltonian_parameters)

@@ -1,7 +1,7 @@
 import abc
 import numpy as np
 
-from quantum_sensing.circuit.hamiltonian_interaction_strength import get_J_function
+from quantum_sensing.circuit.hamiltonian_interaction_strength import interaction_strength
 
 
 class QuantumSensingCircuit(abc.ABC):
@@ -19,8 +19,7 @@ class QuantumSensingCircuit(abc.ABC):
         :return: probability dictionary of binary representation of states to their probabilities
         """
         qubit_pairs = [(i, j) for i in range(self.__num_qubits) for j in range(i + 1, self.__num_qubits)]
-        j_function = get_J_function(self.__hamiltonian_parameters.get("hamiltonian_type"))
-        interaction_strengths = [(j_function(i, j, self.__hamiltonian_parameters), i, j) for i, j in qubit_pairs]
+        interaction_strengths = [(interaction_strength(i, j, self.__hamiltonian_parameters), i, j) for i, j in qubit_pairs]
 
         self.single_body_interaction(np.pi / 2, 'y', self.__num_qubits)
 

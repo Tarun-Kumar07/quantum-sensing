@@ -1,1 +1,1 @@
-from quantum_sensing.circuit.quspin import QuspinQuantumSensingCircuit
+from quantum_sensing.optimization import run_trial, CircuitHyperParameters, HamiltonianHyperParameters
