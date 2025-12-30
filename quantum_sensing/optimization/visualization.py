@@ -18,7 +18,7 @@ def plot_cost_history(cost_history):
 
 
 def plot_mse_with_prior(phis, mse_values):
-    prior_vals = np.array([prior_wrapped_gaussian(phi) for phi in phis])
+    prior_vals = prior_wrapped_gaussian(phis)
     mse_db = 10 * np.log10(mse_values)
 
     # Plotting with twin axes

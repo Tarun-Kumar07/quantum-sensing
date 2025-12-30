@@ -2,7 +2,7 @@ import numpy as np
 
 from quspin.operators import hamiltonian
 from quspin.basis import spin_basis_1d
-from quspin.tools.evolution import expm_multiply_parallel
+from scipy.sparse.linalg import expm_multiply
 
 from quantum_sensing.circuit import QuantumSensingCircuit
 
@@ -39,7 +39,7 @@ class QuspinQuantumSensingCircuit(QuantumSensingCircuit):
         self.__evolve_state_vector(h)
 
     def __evolve_state_vector(self, h: hamiltonian):
-        self.__state_vector = expm_multiply_parallel(-1j * h.tocsc()).dot(self.__state_vector)
+        self.__state_vector = expm_multiply(-1j * h.tocsc(),  self.__state_vector)
 
     def calculate_probabilities(self) -> np.ndarray:
         return np.abs(self.__state_vector) ** 2
