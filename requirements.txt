@@ -8,4 +8,3 @@ qiskit-aer==0.17.2
 numpy==2.3.5
 qsimcirq==0.22.0
 mlflow==3.8.1
-jax==0.6.1

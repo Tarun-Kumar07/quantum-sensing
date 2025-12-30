@@ -1,8 +1,7 @@
+import multiprocessing
 from typing import TypedDict
 
 import numpy as np
-import jax
-import jax.numpy as jnp
 from scipy.integrate import simpson
 
 from quantum_sensing.circuit import create_quantum_sensing_circuit
@@ -37,14 +36,39 @@ def state_to_magnetization(state, num_qubits):
     return num_qubits - 2 * hamming_weight
 
 
+def global_mse_worker(args):
+    """
+    We pass everything needed as arguments so we don't rely on 'self'.
+    """
+    phi, circuit_params, ham_params, backend, num_qubits, a = args
+
+    # We must call the circuit creation logic directly here
+    circuit = create_quantum_sensing_circuit(
+        phi,
+        circuit_params,
+        ham_params,
+        backend
+    )
+    probs = circuit.run_circuit()
+
+    mse = 0.0
+    for state, p in enumerate(probs):
+        m = state_to_magnetization(state, num_qubits)
+        phi_est = a * m
+        mse += ((phi_est - phi) ** 2) * p
+    return mse
+
+
 class CostEvaluator:
     """Encapsulates the cost function logic."""
 
     def __init__(self,
                  circuit_hyperparameters: CircuitHyperParameters,
                  hamiltonian_hyperparameters: HamiltonianHyperParameters,
+                 available_cpu_cores: int,
                  phi_precision: int = 100):
         self.__num_qubits = circuit_hyperparameters['num_qubits']
+        self.__available_cpu_cores = available_cpu_cores
         self.__circuit_backend = circuit_hyperparameters['backend']
         self.__hamiltonian_hyperparameters = hamiltonian_hyperparameters
         self.__phi_range = np.linspace(-np.pi, np.pi, phi_precision)
@@ -63,17 +87,20 @@ class CostEvaluator:
             "decoder_parameters": decoder_parameters,
         }
 
-        def batch_worker(phi_batch):
-            # This runs inside the JAX thread pool across different cores
-            return jnp.array([
-                self.__mean_square_error(float(phi), circuit_parameters, a)
-                for phi in phi_batch
-            ])
+        args_for_tasks = [
+            (
+                phi,
+                circuit_parameters,
+                self.__hamiltonian_hyperparameters,
+                self.__circuit_backend,
+                self.__num_qubits,
+                a
+            )
+            for phi in self.__phi_range
+        ]
 
-        # This replaces your for-loop
-        mse_values = jax.pure_callback(
-            batch_worker,
-            jax.ShapeDtypeStruct((len(self.__phi_range),), jnp.float32), self.__phi_range)
+        with multiprocessing.Pool(processes=self.__available_cpu_cores) as pool:
+            mse_values = pool.map(global_mse_worker, args_for_tasks)
 
         return self.__phi_range, np.array(mse_values)
 

@@ -3,6 +3,7 @@ import tempfile
 
 import mlflow
 import numpy as np
+import psutil
 from numpy import ndarray
 from scipy.optimize import minimize, OptimizeResult
 
@@ -77,7 +78,8 @@ def __initialize_mlflow():
 
 def run_trial(circuit_hyperparameters: CircuitHyperParameters, hamiltonian_hyperparameters: HamiltonianHyperParameters):
     """Orchestrates the experiment with MLflow logging."""
-    cost_evaluator = CostEvaluator(circuit_hyperparameters, hamiltonian_hyperparameters)
+    cores_to_use = get_available_cpu_cores()
+    cost_evaluator = CostEvaluator(circuit_hyperparameters, hamiltonian_hyperparameters, cores_to_use)
     param_manager = ParameterManager(circuit_hyperparameters['num_blocks'])
 
     __initialize_mlflow()
@@ -95,6 +97,14 @@ def run_trial(circuit_hyperparameters: CircuitHyperParameters, hamiltonian_hyper
             optimal_decoder_parameters,
             optimal_a)
         visualization.plot_mse_with_prior(phis, mse_values)
+
+
+def get_available_cpu_cores():
+    physical_cpu_cores = psutil.cpu_count(logical=False) or os.cpu_count()
+    # Subtracting 2 to leave some cores free for other processes
+    cores_to_use = max(1, physical_cpu_cores - 2)
+    print(f"Using {cores_to_use} out of {physical_cpu_cores} physical CPU cores.")
+    return cores_to_use
 
 
 def log_trial_parameters(circuit_hyperparameters, hamiltonian_hyperparameters):
