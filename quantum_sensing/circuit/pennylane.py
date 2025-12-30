@@ -41,7 +41,7 @@ class PennylaneQuantumSensingCircuit(QuantumSensingCircuit):
             self.gates_applied.append((two_qubit_gate, parameters))
 
     def calculate_probabilities(self) -> np.ndarray:
-        @qml.qnode(self.device)
+        @qml.qnode(self.device, interface='jax')
         def circuit():
             for operations, parameters in self.gates_applied:
                 operations(**parameters)

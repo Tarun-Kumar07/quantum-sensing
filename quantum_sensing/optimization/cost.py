@@ -1,6 +1,8 @@
 from typing import TypedDict
 
 import numpy as np
+import jax
+import jax.numpy as jnp
 from scipy.integrate import simpson
 
 from quantum_sensing.circuit import create_quantum_sensing_circuit
@@ -61,10 +63,17 @@ class CostEvaluator:
             "decoder_parameters": decoder_parameters,
         }
 
-        mse_values = []
-        for phi in self.__phi_range:
-            mse = self.__mean_square_error(phi, circuit_parameters, a)
-            mse_values.append(mse)
+        def batch_worker(phi_batch):
+            # This runs inside the JAX thread pool across different cores
+            return jnp.array([
+                self.__mean_square_error(float(phi), circuit_parameters, a)
+                for phi in phi_batch
+            ])
+
+        # This replaces your for-loop
+        mse_values = jax.pure_callback(
+            batch_worker,
+            jax.ShapeDtypeStruct((len(self.__phi_range),), jnp.float32), self.__phi_range)
 
         return self.__phi_range, np.array(mse_values)
 
