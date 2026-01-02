@@ -8,6 +8,10 @@ from catalyst import grad, qjit
 from quantum_sensing.circuit_builder import QuantumSensingCircuit
 from quantum_sensing.cost_evaluator import BayesianCostEvaluator
 
+__DEFAULT_LEARNING_RATE = 0.01
+
+__DEFAULT_NUM_STEPS = 100
+
 
 def run_trial(
         circuit_hyperparameters: dict,
@@ -69,32 +73,36 @@ def __initialize_mlflow():
 
 def __run_optimization(
         evaluator: BayesianCostEvaluator,
-        params: dict,
+        init_params: dict,
         training_hyperparameters: dict):
 
-    learning_rate = training_hyperparameters.get('learning_rate', 0.01)
-    optimizer = optax.adam(learning_rate)
-    opt_state = optimizer.init(params)
+    learning_rate = training_hyperparameters.get('learning_rate', __DEFAULT_LEARNING_RATE)
+    lr_schedule = optax.cosine_onecycle_schedule(
+        transition_steps=training_hyperparameters.get('num_steps', __DEFAULT_NUM_STEPS),
+        peak_value=learning_rate
+    )
+    optimizer = optax.adam(lr_schedule)
+    opt_state = optimizer.init(init_params)
 
     @qjit
     def qjit_compute_cost_grad(params):
         return grad(evaluator.compute_cost, method='fd')(params)
     
-    num_steps = training_hyperparameters.get('num_steps', 100)
+    num_steps = training_hyperparameters.get('num_steps', __DEFAULT_NUM_STEPS)
     for i in range(num_steps):
-        grads = qjit_compute_cost_grad(params)
-        updates, new_opt_state = optimizer.update(grads, opt_state, params)
+        grads = qjit_compute_cost_grad(init_params)
+        updates, new_opt_state = optimizer.update(grads, opt_state, init_params)
 
-        new_params = optax.apply_updates(params, updates)
+        new_params = optax.apply_updates(init_params, updates)
         # Update parameters
-        params = new_params
+        init_params = new_params
         opt_state = new_opt_state
 
         # Log cost
         new_cost = evaluator.compute_cost(new_params)
         mlflow.log_metric("cost", float(new_cost), step=i)
 
-    return params
+    return init_params
 
 def __log_mse_with_prior(cost_evaluator: BayesianCostEvaluator, optimal_parameters: dict):
     phis = cost_evaluator.get_phi_grid()
