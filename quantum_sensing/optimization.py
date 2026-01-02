@@ -121,7 +121,7 @@ def __log_cost_history(cost_history):
 def __log_bmse_with_prior(cost_evaluator: BayesianCostEvaluator, optimal_parameters: dict):
     phis = cost_evaluator.get_phi_grid()
     prior_vals = cost_evaluator.get_prior()
-    mse_vals = cost_evaluator.compute_bmse(optimal_parameters)
+    mse_vals = cost_evaluator.compute_mse(optimal_parameters)
     mse_db = 10 * pnp.log10(mse_vals)
 
     # Plotting with twin axes

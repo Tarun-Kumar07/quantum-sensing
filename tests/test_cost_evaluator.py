@@ -36,7 +36,7 @@ def test_forward_and_backward_pass_with_all_parameters(num_qubits, num_encoder_b
 
     cost = bayesian_cost_evaluator.compute_cost(params)
     assert cost is not None
-    bmse = bayesian_cost_evaluator.compute_bmse(params)
+    bmse = bayesian_cost_evaluator.compute_mse(params)
     assert bmse is not None
 
     @qjit

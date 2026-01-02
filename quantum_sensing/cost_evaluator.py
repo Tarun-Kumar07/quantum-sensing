@@ -34,7 +34,7 @@ def _compute_magnetization(num_qubits: int):
     return num_qubits - 2 * hamming_weights
 
 @qjit
-def _compute_bmse(probabilities_phi_est, phi_est, phi_grid, prior):
+def _compute_mse(probabilities_phi_est, phi_est, phi_grid):
     # probabilities_phi_est shape: (phi_grid_size, 2^num_qubits)
     # phi_est shape: (2^num_qubits,)
 
@@ -44,9 +44,8 @@ def _compute_bmse(probabilities_phi_est, phi_est, phi_grid, prior):
     error_sq = (phi_est[None, :] - phi_grid[:, None]) ** 2
 
     # mse_values shape: (phi_grid_size,)
-    mse_values = pnp.sum(error_sq * probabilities_phi_est, axis=1)
+    return pnp.sum(error_sq * probabilities_phi_est, axis=1)
 
-    return mse_values * prior
 
 
 
@@ -65,18 +64,18 @@ class BayesianCostEvaluator:
         self.__batch_expectation_circuit = vmap(quantum_sensing_circuit.compute_expectation, in_axes=(0, None))
 
     def compute_cost(self, params: dict) -> float:
-        bmse = self.compute_bmse(params)
-        return trapezoid(bmse, self.__phi_grid)
+        mse = self.compute_mse(params) * self.__prior
+        return trapezoid(mse, self.__phi_grid)
 
-    def compute_bmse(self, params):
+    def compute_mse(self, params):
         circuit_parameters = params['circuit_parameters']
         a = params['a']
 
         phi_est = a * self.magnetization
         probabilities_phi_est = self.__batch_probability_circuit(self.__phi_grid, circuit_parameters)
-        bmse = _compute_bmse(probabilities_phi_est, phi_est, self.__phi_grid, self.__prior, )
+        mse = _compute_mse(probabilities_phi_est, phi_est, self.__phi_grid )
 
-        return bmse
+        return mse
 
     def compute_expectation(self, circuit_parameters):
         expectations = self.__batch_expectation_circuit(self.__phi_grid, circuit_parameters)
