@@ -1,7 +1,6 @@
 import optax
 import pennylane.numpy as pnp
 import mlflow
-import time
 import os
 import matplotlib.pyplot as plt
 
@@ -77,8 +76,6 @@ def __run_optimization(
     optimizer = optax.adam(learning_rate)
     opt_state = optimizer.init(params)
 
-    start_time = time.time()
-
     @qjit
     def qjit_compute_cost_grad(params):
         return grad(evaluator.compute_cost, method='fd')(params)
@@ -95,12 +92,10 @@ def __run_optimization(
         
         loss_val = float(loss)
         cost_history.append(loss_val)
-        
-        if i % 10 == 0:
-            print(f"Step {i+1:03d} | Loss: {loss_val:.6f}")
 
-    total_time = time.time() - start_time
-    print(f"Optimization complete in {total_time:.2f} seconds.")
+        print_logs = training_hyperparameters.get('print_logs', False)
+        if print_logs and i % 10 == 0:
+            print(f"Step {i+1:03d} | Loss: {loss_val:.6f}")
 
     return params, cost_history
 
