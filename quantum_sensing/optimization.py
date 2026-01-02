@@ -30,6 +30,7 @@ def run_trial(
             training_hyperparameters,
         )
 
+        mlflow.log_dict(optimal_parameters, "optimal_parameters.json")
         __log_cost_history(cost_history)
         __log_bmse_with_prior(evaluator, optimal_parameters)
         __log_expectation(evaluator, optimal_parameters)
