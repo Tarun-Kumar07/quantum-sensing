@@ -24,15 +24,14 @@ def run_trial(
         mlflow.log_params(hamiltonian_hyperparameters)
         mlflow.log_params(training_hyperparameters)
 
-        optimal_parameters, cost_history = __run_optimization(
+        optimal_parameters = __run_optimization(
             evaluator,
             initial_parameters,
             training_hyperparameters,
         )
 
         mlflow.log_dict(optimal_parameters, "optimal_parameters.json")
-        __log_cost_history(cost_history)
-        __log_bmse_with_prior(evaluator, optimal_parameters)
+        __log_mse_with_prior(evaluator, optimal_parameters)
         __log_expectation(evaluator, optimal_parameters)
 
 
@@ -81,39 +80,23 @@ def __run_optimization(
     def qjit_compute_cost_grad(params):
         return grad(evaluator.compute_cost, method='fd')(params)
     
-    cost_history = []
     num_steps = training_hyperparameters.get('num_steps', 100)
     for i in range(num_steps):
         grads = qjit_compute_cost_grad(params)
         updates, new_opt_state = optimizer.update(grads, opt_state, params)
+
         new_params = optax.apply_updates(params, updates)
+        # Update parameters
+        params = new_params
+        opt_state = new_opt_state
+
+        # Log cost
         new_cost = evaluator.compute_cost(new_params)
-        result = new_params, new_opt_state, new_cost
-        params, opt_state, loss = result
-        
-        loss_val = float(loss)
-        cost_history.append(loss_val)
+        mlflow.log_metric("cost", float(new_cost), step=i)
 
-        print_logs = training_hyperparameters.get('print_logs', False)
-        if print_logs and i % 10 == 0:
-            print(f"Step {i+1:03d} | Loss: {loss_val:.6f}")
+    return params
 
-    return params, cost_history
-
-
-def __log_cost_history(cost_history):
-    figure = plt.figure(figsize=(6, 4))
-    plt.plot(cost_history)
-    plt.xlabel('Iteration')
-    plt.ylabel('Cost function value')
-    plt.title('Optimization Cost History')
-    plt.grid(True)
-    plt.tight_layout()
-    mlflow.log_figure(figure, "optimization_cost_history.png")
-    plt.close(figure)
-
-
-def __log_bmse_with_prior(cost_evaluator: BayesianCostEvaluator, optimal_parameters: dict):
+def __log_mse_with_prior(cost_evaluator: BayesianCostEvaluator, optimal_parameters: dict):
     phis = cost_evaluator.get_phi_grid()
     prior_vals = cost_evaluator.get_prior()
     mse_vals = cost_evaluator.compute_mse(optimal_parameters)

@@ -16,12 +16,16 @@ def J_com(i: int, j: int, hyperparameters: dict) -> float:
     eta_i = eta_j = 0.1
     return (rabi_frequency ** 2) * eta_i * eta_j * mu / (mu ** 2 - omega_m ** 2)
 
+def J_uniform(i: int, j: int, hyperparameters: dict) -> float:
+    return 1.0
 
 def get_J_function(hamiltonian_type: str):
     if hamiltonian_type == "zig_zag":
         return J_zig_zag
     elif hamiltonian_type == "com":
         return J_com
+    elif hamiltonian_type == "uniform":
+        return J_uniform
     else:
         raise ValueError(f"Hamiltonian type '{hamiltonian_type}' is not supported.")
 

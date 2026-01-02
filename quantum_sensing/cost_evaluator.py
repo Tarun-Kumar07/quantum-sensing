@@ -5,7 +5,7 @@ from pennylane import numpy as pnp
 from quantum_sensing import QuantumSensingCircuit
 
 
-def _compute_wrapped_gaussian_prior(grid_vals: pnp.ndarray, delta: float = 0.3, k_max: int = 5):
+def _compute_wrapped_gaussian_prior(grid_vals: pnp.ndarray, delta: float = 0.79, k_max: int = 5):
     """
     Computes the wrapped Gaussian prior distribution over the given grid values.
     """
