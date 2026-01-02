@@ -1,1 +1,3 @@
-from quantum_sensing.optimization import run_trial, CircuitHyperParameters, HamiltonianHyperParameters
+from quantum_sensing.circuit_builder import QuantumSensingCircuit
+from quantum_sensing.cost_evaluator import BayesianCostEvaluator
+from quantum_sensing.optimization import run_trial

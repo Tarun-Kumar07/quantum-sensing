@@ -1,13 +1,8 @@
-pytest==9.0.1
 pennylane==0.42.3
 pennylane-lightning==0.42.0
-quspin==1.0.0
-cirq==1.6.1
-qiskit==2.2.3
-qiskit-aer==0.17.2
-numpy==2.3.5
-qsimcirq==0.22.0
-mlflow==3.8.1
+pennylane-catalyst==0.13.0
 optax==0.2.6
 jax==0.6.0
 jaxlib===0.6.0
+mlflow==3.8.1
+pytest==9.0.1
