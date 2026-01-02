@@ -3,7 +3,7 @@ import pytest
 from quantum_sensing import QuantumSensingCircuit
 from quantum_sensing.cost_evaluator import BayesianCostEvaluator
 import pennylane.numpy as pnp
-from catalyst import grad
+from catalyst import grad, qjit
 
 hamiltonian_parameters = {
     "rabi_frequency": (50 * (10 ** 3)),
@@ -38,5 +38,11 @@ def test_forward_and_backward_pass_with_all_parameters(num_qubits, num_encoder_b
     assert cost is not None
     bmse = bayesian_cost_evaluator.compute_bmse(params)
     assert bmse is not None
-    gradients = grad(bayesian_cost_evaluator.compute_cost)(params)
+
+    @qjit
+    def qjit_grad(params):
+        # TODO : don't know why method='fd' is needed here to avoid error
+        return grad(bayesian_cost_evaluator.compute_cost, method='fd')(params)
+
+    gradients = qjit_grad(params)
     assert gradients is not None

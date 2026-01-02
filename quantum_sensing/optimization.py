@@ -6,7 +6,7 @@ import os
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
-from catalyst import grad
+from catalyst import grad, qjit
 from quantum_sensing.circuit_builder import QuantumSensingCircuit
 from quantum_sensing.cost_evaluator import BayesianCostEvaluator
 
@@ -79,11 +79,15 @@ def __run_optimization(
     opt_state = optimizer.init(params)
 
     start_time = time.time()
+
+    @qjit
+    def qjit_compute_cost_grad(params):
+        return grad(evaluator.compute_cost, method='fd')(params)
     
     cost_history = []
     num_steps = training_hyperparameters.get('num_steps', 100)
     for i in range(num_steps):
-        grads = grad(evaluator.compute_cost)(params)
+        grads = qjit_compute_cost_grad(params)
         updates, new_opt_state = optimizer.update(grads, opt_state, params)
         new_params = optax.apply_updates(params, updates)
         new_cost = evaluator.compute_cost(new_params)
