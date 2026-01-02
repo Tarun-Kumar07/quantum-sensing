@@ -4,7 +4,6 @@ import mlflow
 import time
 import os
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
 
 from catalyst import grad, qjit
 from quantum_sensing.circuit_builder import QuantumSensingCircuit
@@ -85,7 +84,7 @@ def __run_optimization(
         return grad(evaluator.compute_cost, method='fd')(params)
     
     cost_history = []
-    num_steps = training_hyperparameters.get('num_steps', 100)
+    num_steps = training_hyperparameters.get('num_steps', 200)
     for i in range(num_steps):
         grads = qjit_compute_cost_grad(params)
         updates, new_opt_state = optimizer.update(grads, opt_state, params)
@@ -162,5 +161,5 @@ def __log_expectation(evaluator, optimal_parameters):
     ax.legend()
 
     plt.tight_layout()
-    mlflow.log_figure(fig, "plots/jz_vs_phi.png")
+    mlflow.log_figure(fig, "jz_vs_phi.png")
     plt.close(fig)

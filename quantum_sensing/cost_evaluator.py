@@ -1,6 +1,6 @@
-import pennylane.numpy as pnp
-from catalyst import qjit, vmap
+from catalyst import vmap
 from jax.scipy.integrate import trapezoid
+from pennylane import numpy as pnp
 
 from quantum_sensing import QuantumSensingCircuit
 
@@ -33,21 +33,6 @@ def _compute_magnetization(num_qubits: int):
     hamming_weights = pnp.array([bin(int(x)).count('1') for x in states])
     return num_qubits - 2 * hamming_weights
 
-@qjit
-def _compute_mse(probabilities_phi_est, phi_est, phi_grid):
-    # probabilities_phi_est shape: (phi_grid_size, 2^num_qubits)
-    # phi_est shape: (2^num_qubits,)
-
-    # error_sq shape: (phi_grid_size, 2^num_qubits)
-    # phi_est[None, :] is (1, 2^num_qubits)
-    # phi_grid[:, None] is (grid_size, 1)
-    error_sq = (phi_est[None, :] - phi_grid[:, None]) ** 2
-
-    # mse_values shape: (phi_grid_size,)
-    return pnp.sum(error_sq * probabilities_phi_est, axis=1)
-
-
-
 
 class BayesianCostEvaluator:
 
@@ -64,18 +49,27 @@ class BayesianCostEvaluator:
         self.__batch_expectation_circuit = vmap(quantum_sensing_circuit.compute_expectation, in_axes=(0, None))
 
     def compute_cost(self, params: dict) -> float:
-        mse = self.compute_mse(params) * self.__prior
-        return trapezoid(mse, self.__phi_grid)
+        weighted_mse = self.compute_mse(params) * self.__prior
+        return trapezoid(weighted_mse, self.__phi_grid)
 
     def compute_mse(self, params):
         circuit_parameters = params['circuit_parameters']
         a = params['a']
 
-        phi_est = a * self.magnetization
-        probabilities_phi_est = self.__batch_probability_circuit(self.__phi_grid, circuit_parameters)
-        mse = _compute_mse(probabilities_phi_est, phi_est, self.__phi_grid )
+        # all_probs shape: (phi_grid_size, 2^num_qubits)
+        all_probs = self.__batch_probability_circuit(self.__phi_grid, circuit_parameters)
 
-        return mse
+        # phi_est shape: (2^num_qubits,)
+        phi_est = a * self.magnetization
+
+        # error_sq shape: (phi_grid_size, 2^num_qubits)
+        # phi_est[None, :] is (1, 2^num_qubits)
+        # phi_grid[:, None] is (grid_size, 1)
+        error_sq = (phi_est[None, :] - self.__phi_grid[:, None]) ** 2
+        # mse_values shape: (phi_grid_size,)
+        mse_values = pnp.sum(error_sq * all_probs, axis=1)
+
+        return mse_values
 
     def compute_expectation(self, circuit_parameters):
         expectations = self.__batch_expectation_circuit(self.__phi_grid, circuit_parameters)
