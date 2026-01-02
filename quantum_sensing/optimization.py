@@ -84,7 +84,7 @@ def __run_optimization(
         return grad(evaluator.compute_cost, method='fd')(params)
     
     cost_history = []
-    num_steps = training_hyperparameters.get('num_steps', 200)
+    num_steps = training_hyperparameters.get('num_steps', 100)
     for i in range(num_steps):
         grads = qjit_compute_cost_grad(params)
         updates, new_opt_state = optimizer.update(grads, opt_state, params)

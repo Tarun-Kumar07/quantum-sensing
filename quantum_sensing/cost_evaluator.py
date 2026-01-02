@@ -36,7 +36,7 @@ def _compute_magnetization(num_qubits: int):
 
 class BayesianCostEvaluator:
 
-    def __init__(self, quantum_sensing_circuit:QuantumSensingCircuit, num_qubits: int, phi_grid_size: int = 50):
+    def __init__(self, quantum_sensing_circuit:QuantumSensingCircuit, num_qubits: int, phi_grid_size: int = 101):
         self.num_qubits = num_qubits
 
         # Pre-compute fixed components
