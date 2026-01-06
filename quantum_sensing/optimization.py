@@ -41,7 +41,7 @@ def run_trial(
 
 def __create_cost_evaluator(circuit_hyperparameters: dict, hamiltonian_hyperparameters: dict):
     quantum_sensing_circuit = QuantumSensingCircuit(circuit_hyperparameters, hamiltonian_hyperparameters)
-    evaluator = BayesianCostEvaluator(quantum_sensing_circuit, circuit_hyperparameters['num_qubits'])
+    evaluator = BayesianCostEvaluator(quantum_sensing_circuit)
     return evaluator
 
 def __create_initial_parameters(circuit_hyperparameters: dict):

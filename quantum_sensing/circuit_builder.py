@@ -18,6 +18,9 @@ class QuantumSensingCircuit:
         self.compute_probabilities = qjit(qml.QNode(self._probability_logic, dev))
         self.compute_expectation = qjit(qml.QNode(self._expectation_logic, dev))
 
+    def get_num_qubits(self):
+        return self.__num_qubits
+
     def _probability_logic(self, phi, circuit_parameters):
         self.__circuit_body(phi, circuit_parameters)
         return qml.probs(wires=range(self.__num_qubits))

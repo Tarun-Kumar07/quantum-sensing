@@ -5,7 +5,7 @@ from pennylane import numpy as pnp
 from quantum_sensing import QuantumSensingCircuit
 
 
-def _compute_wrapped_gaussian_prior(grid_vals: pnp.ndarray, delta: float = 0.79, k_max: int = 5):
+def _compute_wrapped_gaussian_prior(grid_vals: pnp.ndarray, delta: float, k_max: int = 5):
     """
     Computes the wrapped Gaussian prior distribution over the given grid values.
     """
@@ -36,13 +36,11 @@ def _compute_magnetization(num_qubits: int):
 
 class BayesianCostEvaluator:
 
-    def __init__(self, quantum_sensing_circuit:QuantumSensingCircuit, num_qubits: int, phi_grid_size: int = 101):
-        self.num_qubits = num_qubits
-
+    def __init__(self, quantum_sensing_circuit:QuantumSensingCircuit, delta: float = 0.79, phi_grid_size: int = 101):
         # Pre-compute fixed components
         self.__phi_grid = pnp.linspace(-pnp.pi, pnp.pi, phi_grid_size)
-        self.__prior = _compute_wrapped_gaussian_prior(self.__phi_grid)
-        self.magnetization = _compute_magnetization(num_qubits)
+        self.__prior = _compute_wrapped_gaussian_prior(self.__phi_grid, delta)
+        self.__magnetization = _compute_magnetization(quantum_sensing_circuit.get_num_qubits())
 
         # Vectorize the circuit
         self.__batch_probability_circuit = vmap(quantum_sensing_circuit.compute_probabilities, in_axes=(0, None))
@@ -60,7 +58,7 @@ class BayesianCostEvaluator:
         all_probs = self.__batch_probability_circuit(self.__phi_grid, circuit_parameters)
 
         # phi_est shape: (2^num_qubits,)
-        phi_est = a * self.magnetization
+        phi_est = a * self.__magnetization
 
         # error_sq shape: (phi_grid_size, 2^num_qubits)
         # phi_est[None, :] is (1, 2^num_qubits)

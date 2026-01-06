@@ -28,7 +28,7 @@ def test_forward_and_backward_pass_with_all_parameters(num_qubits, num_encoder_b
         'num_decoder_blocks': num_decoder_blocks,
     }
     quantum_sensing_circuit = QuantumSensingCircuit(circuit_hyperparameters, hamiltonian_parameters)
-    bayesian_cost_evaluator = BayesianCostEvaluator(quantum_sensing_circuit, num_qubits, 5)
+    bayesian_cost_evaluator = BayesianCostEvaluator(quantum_sensing_circuit,  phi_grid_size=5)
     params = {
         'circuit_parameters': pnp.zeros((num_encoder_blocks + num_decoder_blocks, 3)),
         'a': 0.1
