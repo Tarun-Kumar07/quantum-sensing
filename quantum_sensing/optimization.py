@@ -106,7 +106,7 @@ def __run_optimization(
 
         # Log mse_cost
         mse_cost = evaluator.compute_cost(new_params)
-        mlflow.log_metric("mse_cost", float(mse_cost), step=i)
+        mlflow.log_metric("cost", float(mse_cost), step=i)
 
     return params, mse_cost
 
