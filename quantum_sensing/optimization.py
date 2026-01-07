@@ -16,32 +16,36 @@ __DEFAULT_NUM_STEPS = 100
 def run_trial(
         circuit_hyperparameters: dict,
         hamiltonian_hyperparameters: dict,
+        prior_width: float = 0.79,
         training_hyperparameters: dict = {},
         run_name: str = None):
 
-    evaluator = __create_cost_evaluator(circuit_hyperparameters, hamiltonian_hyperparameters)
+    evaluator = __create_cost_evaluator(circuit_hyperparameters, hamiltonian_hyperparameters, prior_width)
     initial_parameters = __create_initial_parameters(circuit_hyperparameters)
 
     __initialize_mlflow()
     with mlflow.start_run(run_name=run_name):
         mlflow.log_params(circuit_hyperparameters)
         mlflow.log_params(hamiltonian_hyperparameters)
+        mlflow.log_param('prior_width', prior_width)
         mlflow.log_params(training_hyperparameters)
 
-        optimal_parameters = __run_optimization(
+        optimal_parameters, mse_cost = __run_optimization(
             evaluator,
             initial_parameters,
             training_hyperparameters,
         )
+
+        log_posterior_to_prior_ratio(mse_cost, prior_width)
 
         mlflow.log_dict(optimal_parameters, "optimal_parameters.json")
         __log_mse_with_prior(evaluator, optimal_parameters)
         __log_expectation(evaluator, optimal_parameters)
 
 
-def __create_cost_evaluator(circuit_hyperparameters: dict, hamiltonian_hyperparameters: dict):
+def __create_cost_evaluator(circuit_hyperparameters: dict, hamiltonian_hyperparameters: dict, prior_width: float):
     quantum_sensing_circuit = QuantumSensingCircuit(circuit_hyperparameters, hamiltonian_hyperparameters)
-    evaluator = BayesianCostEvaluator(quantum_sensing_circuit)
+    evaluator = BayesianCostEvaluator(quantum_sensing_circuit, prior_width)
     return evaluator
 
 def __create_initial_parameters(circuit_hyperparameters: dict):
@@ -87,22 +91,32 @@ def __run_optimization(
     @qjit
     def qjit_compute_cost_grad(params):
         return grad(evaluator.compute_cost, method='fd')(params)
-    
-    num_steps = training_hyperparameters.get('num_steps', __DEFAULT_NUM_STEPS)
-    for i in range(num_steps):
-        grads = qjit_compute_cost_grad(init_params)
-        updates, new_opt_state = optimizer.update(grads, opt_state, init_params)
 
-        new_params = optax.apply_updates(init_params, updates)
+    params = init_params
+    num_steps = training_hyperparameters.get('num_steps', __DEFAULT_NUM_STEPS)
+    mse_cost = None
+    for i in range(num_steps):
+        grads = qjit_compute_cost_grad(params)
+        updates, new_opt_state = optimizer.update(grads, opt_state, params)
+
+        new_params = optax.apply_updates(params, updates)
         # Update parameters
-        init_params = new_params
+        params = new_params
         opt_state = new_opt_state
 
-        # Log cost
-        new_cost = evaluator.compute_cost(new_params)
-        mlflow.log_metric("cost", float(new_cost), step=i)
+        # Log mse_cost
+        mse_cost = evaluator.compute_cost(new_params)
+        mlflow.log_metric("mse_cost", float(mse_cost), step=i)
 
-    return init_params
+    return params, mse_cost
+
+
+def log_posterior_to_prior_ratio(mse_cost, phase_delta):
+    posterior_delta = pnp.sqrt(mse_cost)
+    posterior_to_prior_ratio = posterior_delta / (phase_delta)
+    posterior_to_prior_ratio_db = 10 * pnp.log10(posterior_to_prior_ratio)
+    mlflow.log_metric("posterior_to_prior_ratio_db", posterior_to_prior_ratio_db)
+
 
 def __log_mse_with_prior(cost_evaluator: BayesianCostEvaluator, optimal_parameters: dict):
     phis = cost_evaluator.get_phi_grid()

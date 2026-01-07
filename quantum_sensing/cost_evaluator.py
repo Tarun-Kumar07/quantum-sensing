@@ -36,10 +36,10 @@ def _compute_magnetization(num_qubits: int):
 
 class BayesianCostEvaluator:
 
-    def __init__(self, quantum_sensing_circuit:QuantumSensingCircuit, delta: float = 0.79, phi_grid_size: int = 101):
+    def __init__(self, quantum_sensing_circuit:QuantumSensingCircuit, prior_width, phi_grid_size: int = 101):
         # Pre-compute fixed components
         self.__phi_grid = pnp.linspace(-pnp.pi, pnp.pi, phi_grid_size)
-        self.__prior = _compute_wrapped_gaussian_prior(self.__phi_grid, delta)
+        self.__prior = _compute_wrapped_gaussian_prior(self.__phi_grid, prior_width)
         self.__magnetization = _compute_magnetization(quantum_sensing_circuit.get_num_qubits())
 
         # Vectorize the circuit
