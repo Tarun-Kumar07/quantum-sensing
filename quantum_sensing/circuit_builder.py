@@ -64,3 +64,6 @@ class QuantumSensingCircuit:
     def __apply_qubit_interaction(self, gate, theta: float) -> None:
         for J_ij, i, j in self.__interaction_strengths:
             gate(theta * J_ij, wires=[i, j])
+
+    def get_interaction_strengths(self):
+        return self.__interaction_strengths

@@ -20,11 +20,10 @@ def run_trial(
         training_hyperparameters: dict = {},
         run_name: str = None):
 
-    evaluator = __create_cost_evaluator(circuit_hyperparameters, hamiltonian_hyperparameters, prior_width)
-    initial_parameters = __create_initial_parameters(circuit_hyperparameters)
-
     __initialize_mlflow()
     with mlflow.start_run(run_name=run_name):
+        evaluator = __create_cost_evaluator(circuit_hyperparameters, hamiltonian_hyperparameters, prior_width)
+        initial_parameters = __create_initial_parameters(circuit_hyperparameters)
         mlflow.log_params(circuit_hyperparameters)
         mlflow.log_params(hamiltonian_hyperparameters)
         mlflow.log_param('prior_width', prior_width)
@@ -45,6 +44,10 @@ def run_trial(
 
 def __create_cost_evaluator(circuit_hyperparameters: dict, hamiltonian_hyperparameters: dict, prior_width: float):
     quantum_sensing_circuit = QuantumSensingCircuit(circuit_hyperparameters, hamiltonian_hyperparameters)
+    hamiltonian_parameters = {
+        'interaction_strengths': quantum_sensing_circuit.get_interaction_strengths()
+    }
+    mlflow.log_dict(hamiltonian_parameters, "hamiltonian_parameters.json")
     evaluator = BayesianCostEvaluator(quantum_sensing_circuit, prior_width)
     return evaluator
 

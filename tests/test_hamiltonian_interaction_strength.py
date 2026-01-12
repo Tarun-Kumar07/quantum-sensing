@@ -1,7 +1,7 @@
 from quantum_sensing.hamiltonian_interaction_strength import interaction_strength
 
 
-def test_J_com_5_returns_same_value_for_same_inputs():
+def test_J_com_5_returns_different_value_for_same_inputs():
     hamiltonian_hyperparameters = {
         "rabi_frequency": 1.0,
         "omega_m": 2.0,
@@ -9,6 +9,7 @@ def test_J_com_5_returns_same_value_for_same_inputs():
         "hamiltonian_type": "com_5"
     }
 
-    values = [interaction_strength(3, 1, hamiltonian_hyperparameters) for _ in range(100)]
+    j_12 = interaction_strength(1, 2, hamiltonian_hyperparameters)
+    j_34 = interaction_strength(3, 4, hamiltonian_hyperparameters)
 
-    assert all(value == values[0] for value in values), "J_com_5 returned different values for the same inputs"
+    assert j_12 != j_34, "J_com_5 returned the same value for different qubit pairs"

@@ -20,9 +20,7 @@ def J_com(i: int, j: int, hyperparameters: dict) -> float:
     return (rabi_frequency ** 2) * eta_i * eta_j * mu / (mu ** 2 - omega_m ** 2)
 
 def __random_perturbation_factor(maximum_value: int) -> float:
-    seed = hash(maximum_value)
-    rng = np.random.default_rng(seed)
-    return 0.01 * rng.choice([-maximum_value, maximum_value])
+    return 0.01 * np.random.choice([-maximum_value, maximum_value])
 
 def J_com_5(i: int, j:int, hyperparameters: dict) -> float:
     return (1 + __random_perturbation_factor(5)) * J_com(i, j, hyperparameters)
